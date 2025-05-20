@@ -228,6 +228,7 @@ def make_regression_spec(instance: SWEbenchInstance) -> TestSpec:
     env_name = "testbed"
     repo_directory = f"/{env_name}"
     specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
+    # docker_specs = specs.get("docker_specs", {})
 
     repo_script_list = make_repo_script_list(
         specs, repo, repo_directory, base_commit, env_name
@@ -252,6 +253,9 @@ def make_regression_spec(instance: SWEbenchInstance) -> TestSpec:
         arch=arch,
         FAIL_TO_PASS=fail_to_pass,  # Remove the fail to pass cases
         PASS_TO_PASS=pass_to_pass,
+        # language=MAP_REPO_TO_EXT[repo],
+        # docker_specs=docker_specs,
+        # namespace="",
     )
 
 
@@ -523,7 +527,8 @@ def run_tests(
         }
 
     instances = get_dataset_from_preds(
-        dataset_name, split, instance_ids, predictions, run_id
+        dataset_name, split, instance_ids, predictions, run_id, 
+        #rewrite_reports=False
     )
 
     print(f"Running {len(instances)} unevaluated instances...")
@@ -542,6 +547,7 @@ def run_tests(
                 test = json_obj["tests_passing_in_original_repo"]
                 instance_test_dict[instance_id] = test
 
+    # 重新生成instance的test_spec
     no_f2p_instances = []
     for instance in instances:
         revised_instance = instance
@@ -562,6 +568,7 @@ def run_tests(
 
     test_specs = rearrange_patches(test_specs)
 
+    # 检查是否存在instance image
     instance_image_ids = {x.instance_image_key for x in test_specs}
     existing_images = {
         tag
@@ -576,6 +583,7 @@ def run_tests(
         os.path.join("logs", "run_evaluation", run_id, "test")
     )
 
+    # 如果存在instances_to_run，则只运行instances_to_run，否则运行所有未评估的instances
     if instances_to_run:
         ids = instances_to_run
     else:

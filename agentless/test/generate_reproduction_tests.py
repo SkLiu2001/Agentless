@@ -500,6 +500,7 @@ def main():
             "deepseek-coder",
             "gpt-4o-mini-2024-07-18",
             "claude-3-5-sonnet-20241022",
+            "claude35_sonnet"
         ],
     )
     parser.add_argument(

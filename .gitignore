@@ -185,3 +185,4 @@ dev/
 
 # Jupyter Notebooks
 *.ipynb
+scripts/

@@ -156,6 +156,7 @@ def modified_length(normalized_patch):
 def majority_voting(args):
 
     with open(args.output_file, "w") as f:
+        print(f"args.output_file: {args.output_file}")
 
         for instance_id in execution_results:
             if len(execution_results[instance_id]) < args.num_samples:
@@ -331,6 +332,7 @@ def main():
     parser.add_argument("--output_file", type=str, default="all_preds.jsonl")
     args = parser.parse_args()
 
+    args.output_file = os.path.join(args.patch_folder, args.output_file)
     # first normalize
     normalize_patches(args)
     # then load results
