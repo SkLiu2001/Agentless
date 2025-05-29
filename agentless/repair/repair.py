@@ -733,9 +733,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--loc_file", type=str, required=True)
     parser.add_argument("--top_n", type=int, default=1)
-    parser.add_argument("--loc_interval", action="store_true")
+    parser.add_argument("--loc_interval", action="store_true",help="是否使用独立的上下文区域")
     parser.add_argument("--context_window", type=int, default=10)
-    parser.add_argument("--gen_and_process", action="store_true")
+    parser.add_argument("--gen_and_process", action="store_true",help="同时执行生成和后处理")
     parser.add_argument("--max_samples", type=int, default=20, help="Sampling budget.")
     parser.add_argument(
         "--select_id",
@@ -752,22 +752,23 @@ def main():
             "deepseek-coder",
             "gpt-4o-mini-2024-07-18",
             "claude-3-5-sonnet-20241022",
+            "qwen25_32_instruct_ac"
         ],
     )
     parser.add_argument(
         "--backend",
         type=str,
         default="openai",
-        choices=["openai", "deepseek", "anthropic"],
+        choices=["openai", "deepseek", "anthropic","whale"],
     )
     parser.add_argument("--output_folder", type=str, required=True)
     parser.add_argument("--post_process", action="store_true")
     parser.add_argument("--add_space", action="store_true")
-    parser.add_argument("--cot", action="store_true")
-    parser.add_argument("--fine_grain_loc_only", action="store_true")
-    parser.add_argument("--diff_format", action="store_true")
-    parser.add_argument("--str_replace_format", action="store_true")
-    parser.add_argument("--skip_greedy", action="store_true")
+    parser.add_argument("--cot", action="store_true",help="是否使用CoT,prompt存在差别")
+    parser.add_argument("--fine_grain_loc_only", action="store_true",help="是否只使用细粒度编辑位置")
+    parser.add_argument("--diff_format", action="store_true",help="是否使用diff格式")
+    parser.add_argument("--str_replace_format", action="store_true",help="是否使用str_replace格式")
+    parser.add_argument("--skip_greedy", action="store_true",help="是否跳过greedy")
     parser.add_argument("--sticky_scroll", action="store_true")
     parser.add_argument(
         "--num_threads",

@@ -1,11 +1,14 @@
 import json
 import os
+import logging
 
 from agentless.util.parse_global_var import parse_global_var_from_code
 from get_repo_structure.get_repo_structure import (
     get_project_structure_from_scratch,
     parse_python_file,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def line_wrap_content(
@@ -324,6 +327,15 @@ def transfer_arb_locs_to_locs(
 
 def check_contains_valid_loc(file_to_locs, structure):
     """checks if the llm generated locations have at least one location valid"""
+    
+    # Add type checking and error handling
+    if not isinstance(file_to_locs, dict):
+        logger.warning(f"Expected file_to_locs to be a dictionary, got {type(file_to_locs)}")
+        return False
+        
+    if not file_to_locs:
+        logger.warning("file_to_locs is empty")
+        return False
 
     file_contents = get_repo_files(structure, list(file_to_locs.keys()))
 

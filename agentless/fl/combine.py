@@ -1,17 +1,23 @@
 import argparse
 import json
 import os
+import logging
 from collections import Counter
 
 from tqdm import tqdm
 
 from agentless.util.utils import load_jsonl
 
+# 设置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def combine_file_level(args):
-
     embed_used_locs = load_jsonl(args.retrieval_loc_file)
     model_used_locs = load_jsonl(args.model_loc_file)
+
+    logger.info(f"Loaded {len(embed_used_locs)} records from embed_used_locs")
+    logger.info(f"Loaded {len(model_used_locs)} records from model_used_locs")
 
     with open(f"{args.output_folder}/embed_used_locs.jsonl", "w") as f:
         for loc in embed_used_locs:
@@ -23,11 +29,15 @@ def combine_file_level(args):
 
     for pred in tqdm(model_used_locs, colour="MAGENTA"):
         instance_id = pred["instance_id"]
-
+        
+        # 检查是否存在匹配的记录
+        matching_records = [x for x in embed_used_locs if x["instance_id"] == instance_id]
+        if not matching_records:
+            logger.warning(f"No matching record found for instance_id: {instance_id}")
+            continue
+            
         model_loc = pred["found_files"]
-        retrieve_loc = [x for x in embed_used_locs if x["instance_id"] == instance_id][
-            0
-        ]["found_files"]
+        retrieve_loc = matching_records[0]["found_files"]
 
         combined_loc_counter = Counter()
         combined_locs = []

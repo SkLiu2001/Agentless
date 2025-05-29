@@ -515,7 +515,7 @@ def extract_locs_for_files(locs, file_names, keep_old_order=False):
         if file_name not in results:  # guard for new order case
             results[file_name] = []
 
-    return {fn: ["\n".join(results[fn])] for fn in results.keys()}
+    return {fn: ["\n".join(results[fn])] for fn in results.keys()} 
 
 
 def extract_starting_number(subcommand):

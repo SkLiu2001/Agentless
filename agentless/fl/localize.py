@@ -16,7 +16,7 @@ from agentless.util.preprocess_data import (
 )
 from agentless.util.utils import load_existing_instance_ids, load_jsonl, setup_logger
 
-MAX_RETRIES = 5
+MAX_RETRIES = 1
 
 
 def localize_irrelevant_instance(
@@ -100,6 +100,10 @@ def localize_irrelevant_instance(
 def localize_instance(
     bug, args, swe_bench_data, start_file_locs, existing_instance_ids, write_lock=None
 ):
+    """
+    接收一个 bug 实例，分析并定位相关的代码位置
+    支持多级定位：文件级、相关代码级、细粒度行级
+    """
     instance_id = bug["instance_id"]
     log_file = os.path.join(
         args.output_folder, "localization_logs", f"{instance_id}.log"
@@ -285,7 +289,7 @@ def localize_instance(
                 if not args.direct_edit_loc:
                     coarse_found_locs = found_related_locs
                     (
-                        found_edit_locs,
+                        found_edit_locs,# 返回的是一个列表，列表中每个元素是一个字典，字典的key是文件名，value是字符串，字符串是编辑位置
                         additional_artifact_loc_edit_location,
                         edit_loc_traj,
                     ) = fl.localize_line_from_coarse_function_locs(
@@ -307,14 +311,16 @@ def localize_instance(
                     sample_valid = False
                     if args.num_samples > 1:
                         for found_edit_loc in found_edit_locs:
-                            if check_contains_valid_loc(
+                            # Ensure found_edit_loc is a dictionary
+                            if isinstance(found_edit_loc, dict) and check_contains_valid_loc(
                                 found_edit_loc, structure=structure
                             ):
                                 # at least one set of location contains valid edit locs is okay
                                 sample_valid = True
                                 break
                     else:
-                        if check_contains_valid_loc(
+                        # Ensure found_edit_locs is a dictionary
+                        if isinstance(found_edit_locs, dict) and check_contains_valid_loc(
                             found_edit_locs, structure=structure
                         ):
                             break
@@ -351,14 +357,16 @@ def localize_instance(
                     sample_valid = False
                     if args.num_samples > 1:
                         for found_edit_loc in found_edit_locs:
-                            if check_contains_valid_loc(
+                            # Ensure found_edit_loc is a dictionary
+                            if isinstance(found_edit_loc, dict) and check_contains_valid_loc(
                                 found_edit_loc, structure=structure
                             ):
                                 # at least one set of location contains valid edit locs is okay
                                 sample_valid = True
                                 break
                     else:
-                        if check_contains_valid_loc(
+                        # Ensure found_edit_locs is a dictionary
+                        if isinstance(found_edit_locs, dict) and check_contains_valid_loc(
                             found_edit_locs, structure=structure
                         ):
                             break
@@ -536,9 +544,9 @@ def main():
     parser.add_argument("--file_level", action="store_true")
     parser.add_argument("--related_level", action="store_true")
     parser.add_argument("--fine_grain_line_level", action="store_true")
-    parser.add_argument("--top_n", type=int, default=3)
+    parser.add_argument("--top_n", type=int, default=3) # 控制每一步生成时候选词的数量
     parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--num_samples", type=int, default=1)
+    parser.add_argument("--num_samples", type=int, default=1) # 控制生成完整答案的数量
     parser.add_argument("--compress", action="store_true")
     parser.add_argument("--compress_assign", action="store_true")
     parser.add_argument("--compress_assign_total_lines", type=int, default=30)
@@ -577,13 +585,14 @@ def main():
             "deepseek-coder",
             "gpt-4o-mini-2024-07-18",
             "claude-3-5-sonnet-20241022",
+            "qwen25_32_instruct_ac",
         ],
     )
     parser.add_argument(
         "--backend",
         type=str,
         default="openai",
-        choices=["openai", "deepseek", "anthropic"],
+        choices=["openai", "deepseek", "anthropic", "whale"],
     )
     parser.add_argument(
         "--dataset",

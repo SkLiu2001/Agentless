@@ -11,7 +11,7 @@ from agentless.util.preprocess_data import (
     show_project_structure,
 )
 
-MAX_CONTEXT_LENGTH = 128000
+MAX_CONTEXT_LENGTH = 32000
 
 
 class FL(ABC):
@@ -413,9 +413,10 @@ Return just the locations wrapped with ```.
             )  # Recreate message
 
         if message_too_long(message):
-            raise ValueError(
-                "The remaining file content is too long to fit within the context length"
-            )
+            # raise ValueError(
+            #     "The remaining file content is too long to fit within the context length"
+            # )
+            self.logger.info("The remaining file content is too long to fit within the context length")
         self.logger.info(f"prompting with message:\n{message}")
         self.logger.info("=" * 80)
 
@@ -497,9 +498,10 @@ Return just the locations wrapped with ```.
             )  # Recreate message
 
         if message_too_long(message):
-            raise ValueError(
-                "The remaining file content is too long to fit within the context length"
-            )
+            # raise ValueError(
+            #     "The remaining file content is too long to fit within the context length"
+            # )
+            self.logger.info("The remaining file content is too long to fit within the context length")
         self.logger.info(f"prompting with message:\n{message}")
         self.logger.info("=" * 80)
 
@@ -605,9 +607,10 @@ Return just the locations wrapped with ```.
             )
 
         if message_too_long(message):
-            raise ValueError(
-                "The remaining file content is too long to fit within the context length"
-            )
+            # raise ValueError(
+            #     "The remaining file content is too long to fit within the context length"
+            # )
+            self.logger.info("The remaining file content is too long to fit within the context length")
 
         if mock:
             self.logger.info("Skipping querying model since mock=True")
@@ -721,9 +724,10 @@ Return just the locations wrapped with ```.
             )  # Recreate message
 
         if message_too_long(message):
-            raise ValueError(
-                "The remaining file content is too long to fit within the context length"
-            )
+            # raise ValueError(
+            #     "The remaining file content is too long to fit within the context length"
+            # )
+            self.logger.info("The remaining file content is too long to fit within the context length")
         self.logger.info(f"prompting with message:\n{message}")
         self.logger.info("=" * 80)
 
@@ -778,7 +782,8 @@ Return just the locations wrapped with ```.
             self.logger.info(f"==== extracted locs ====")
             for loc in model_found_locs_separated:
                 self.logger.info(loc)
-            self.logger.info("=" * 80)
+            self.logger.info(f"==== extracted docs and code ====")
+            self.logger.info(model_found_locs_separated)
 
         if len(model_found_locs_separated_in_samples) == 1:
             model_found_locs_separated_in_samples = (
