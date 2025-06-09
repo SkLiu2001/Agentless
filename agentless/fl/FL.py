@@ -11,7 +11,7 @@ from agentless.util.preprocess_data import (
     show_project_structure,
 )
 
-MAX_CONTEXT_LENGTH = 32000
+MAX_CONTEXT_LENGTH = 128000
 
 
 class FL(ABC):
@@ -371,10 +371,24 @@ Return just the locations wrapped with ```.
         prefix_lines=10,
         suffix_lines=10,
     ):
+        """
+        压缩文件内容
+        Args:
+            file_names: 文件名列表
+            mock: 是否使用mock
+            temperature: 温度
+            keep_old_order: 是否保持旧的顺序
+        """
         from agentless.util.api_requests import num_tokens_from_messages
         from agentless.util.model import make_model
 
         file_contents = get_repo_files(self.structure, file_names)
+        # file_contents demo
+        # {
+        #     "path/to/file1.py": "file1的内容...",
+        #     "path/to/file2.py": "file2的内容...",
+        #     # ... 更多文件
+        # }
         compressed_file_contents = {
             fn: get_skeleton(
                 code,
@@ -385,10 +399,12 @@ Return just the locations wrapped with ```.
             )
             for fn, code in file_contents.items()
         }
+        # compressed_file_contents 对file_contents进行压缩
         contents = [
             self.file_content_in_block_template.format(file_name=fn, file_content=code)
             for fn, code in compressed_file_contents.items()
         ]
+        # 将压缩后的文件内容拼接成一个字符串
         file_contents = "".join(contents)
         template = (
             self.obtain_relevant_functions_and_vars_from_compressed_files_prompt_more
@@ -562,6 +578,26 @@ Return just the locations wrapped with ```.
         from agentless.util.model import make_model
 
         file_contents = get_repo_files(self.structure, file_names)
+        # coarse_locs = {
+        #     "src/main.py": ["function: main", "line: 10-15"],
+        #     "src/utils.py": ["class: Helper", "function: process_data"]
+        # }
+        # pred_files: 预测需要修改的文件列表 pred_files = ["src/main.py", "src/utils.py"]
+        # 输出：# 1. topn_content: 格式化后的代码上下文
+        # topn_content = """### src/main.py
+        # def main():
+        #     print("Hello")
+        #     data = process_data("test")
+        #     return data
+
+        # ### src/utils.py
+        # class Helper:
+        #     def __init__(self):
+        #         self.data = []
+            
+        #     def process_data(self, input_data):
+        #         return input_data.strip()
+        # """
         topn_content, file_loc_intervals = construct_topn_file_context(
             coarse_locs,
             file_names,

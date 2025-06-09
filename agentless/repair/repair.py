@@ -245,9 +245,9 @@ def construct_topn_file_context(
     for pred_file, locs in file_to_locs.items():
         content = file_contents[pred_file]
         line_locs, context_intervals = transfer_arb_locs_to_locs(
-            locs,
-            structure,
-            pred_file,
+            locs, #相关元素 比如行号
+            structure,#项目结构
+            pred_file,#文件名
             context_window,
             loc_interval,
             fine_grain_loc_only,
@@ -343,6 +343,7 @@ def process_loc(loc, args, swe_bench_data, prev_o, write_lock=None):
     # Construct top-n file context
     file_to_edit_locs = dict()
 
+    # 编辑位置
     if "found_edit_locs" in loc:
         file_to_edit_locs = loc["found_edit_locs"]
 
@@ -752,7 +753,8 @@ def main():
             "deepseek-coder",
             "gpt-4o-mini-2024-07-18",
             "claude-3-5-sonnet-20241022",
-            "qwen25_32_instruct_ac"
+            "qwen25_32_instruct_ac",
+            "claude35_sonnet"
         ],
     )
     parser.add_argument(

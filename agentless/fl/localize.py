@@ -497,9 +497,14 @@ def merge(args):
         for locs in start_file_locs:
             merged_found_locs = []
             if "found_edit_locs" in locs and len(locs["found_edit_locs"]):
-                merged_found_locs = merge_locs(
-                    locs["found_edit_locs"][st_id : st_id + 1]
-                )
+                # 检查 found_edit_locs 的类型
+                if isinstance(locs["found_edit_locs"], list):
+                    # 如果是列表，使用切片
+                    edit_locs = locs["found_edit_locs"][st_id : st_id + 1]
+                else:
+                    # 如果是字典，直接使用
+                    edit_locs = [locs["found_edit_locs"]]
+                merged_found_locs = merge_locs(edit_locs)
             merged_locs.append({**locs, "found_edit_locs": merged_found_locs})
         with open(
             f"{args.output_folder}/loc_merged_{st_id}-{en_id}_outputs.jsonl", "w"
@@ -547,7 +552,7 @@ def main():
     parser.add_argument("--top_n", type=int, default=3) # 控制每一步生成时候选词的数量
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--num_samples", type=int, default=1) # 控制生成完整答案的数量
-    parser.add_argument("--compress", action="store_true")
+    parser.add_argument("--compress", action="store_true",help="是否使用压缩")
     parser.add_argument("--compress_assign", action="store_true")
     parser.add_argument("--compress_assign_total_lines", type=int, default=30)
     parser.add_argument("--compress_assign_prefix_lines", type=int, default=10)
@@ -586,6 +591,7 @@ def main():
             "gpt-4o-mini-2024-07-18",
             "claude-3-5-sonnet-20241022",
             "qwen25_32_instruct_ac",
+            "claude35_sonnet"
         ],
     )
     parser.add_argument(
